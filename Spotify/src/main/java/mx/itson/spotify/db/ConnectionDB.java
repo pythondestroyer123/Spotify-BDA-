@@ -10,9 +10,8 @@ import java.sql.SQLException;
 
 /**
  *
- * @author emili
+ * @author Emiliano
  */
-
 public class ConnectionDB {
     
     private static final String URL = "jdbc:mariadb://localhost:3306/spotify";
@@ -33,4 +32,3 @@ public class ConnectionDB {
     }
     
 }
-
