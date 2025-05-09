@@ -282,6 +282,9 @@ public class RegistroPacientes extends javax.swing.JFrame {
                 new RegistroPacientes().setVisible(true);
             }
         });
+        
+        //Emiliano
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
