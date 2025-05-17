@@ -26,9 +26,9 @@ public class Login extends javax.swing.JFrame {
 
     private void loginAction() {
         String username = tstUsername.getText();
-    String password = new String(pswUserPassword.getPassword());
+        String password = new String(pswUserPassword.getPassword());
 
-    try (Connection conn = ConnectionDB.getConnection()) {
+        try (Connection conn = ConnectionDB.getConnection()) {
         PreparedStatement stmt = conn.prepareStatement("SELECT password, active FROM users WHERE username = ?");
         stmt.setString(1, username);
         ResultSet rs = stmt.executeQuery();

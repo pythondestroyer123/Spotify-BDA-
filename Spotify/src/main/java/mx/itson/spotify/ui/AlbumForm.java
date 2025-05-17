@@ -53,7 +53,7 @@ public class AlbumForm extends javax.swing.JDialog {
     });
 }
     private void cargarArtistas() {
-         artists = new ArrayList<>();
+    artists = new ArrayList<>();
     cmbArtist.removeAllItems();
     try (Connection con = ConnectionDB.getConnection();
          PreparedStatement ps = con.prepareStatement("SELECT artist_id, artistName FROM Artist");
@@ -72,7 +72,7 @@ public class AlbumForm extends javax.swing.JDialog {
     }
 
     private void cargarAlbums() {
-     model.setRowCount(0); // Usar el modelo de clase en lugar de uno local
+    model.setRowCount(0); // Usar el modelo de clase en lugar de uno local
 
     String sql = "SELECT a.albumName, a.albumDate, ar.artistName " +
                  "FROM Album a JOIN Artist ar ON a.artist_id = ar.artist_id";
@@ -385,7 +385,7 @@ public class AlbumForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
-     int fila = tblAlbumManagment.getSelectedRow();
+    int fila = tblAlbumManagment.getSelectedRow();
     if (fila < 0) {
         JOptionPane.showMessageDialog(this, "Selecciona un álbum para editar.");
         return;
