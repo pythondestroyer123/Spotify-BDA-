@@ -1,0 +1,526 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
+ */
+package mx.itson.spotify.ui;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import mx.itson.spotify.db.ConnectionDB;
+
+
+
+/**
+ *
+ * @author emili
+ */
+public class SongForm extends javax.swing.JDialog {
+
+    private DefaultTableModel model;
+    private int selectedSongId = -1;
+
+    public SongForm(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
+        initComponents();
+        model = (DefaultTableModel) tblSongsManagment.getModel();
+        
+        loadArtists();
+        loadAlbums();
+        loadSongs();
+        
+        tblSongsManagment.getSelectionModel().addListSelectionListener(e -> {
+            int row = tblSongsManagment.getSelectedRow();
+            if (row >= 0) {
+                String songName = model.getValueAt(row, 0).toString();
+                try (Connection conn = ConnectionDB.getConnection();
+                     PreparedStatement ps = conn.prepareStatement(
+                         "SELECT s.song_id, s.songName, s.duration, a.album_id " +
+                         "FROM Song s JOIN Album a ON s.album_id = a.album_id " +
+                         "WHERE s.songName = ?")) {
+                    
+                    ps.setString(1, songName);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        selectedSongId = rs.getInt("song_id");
+                        txtSongName.setText(rs.getString("songName"));
+                        txtSongDuration.setText(rs.getString("duration"));
+                        
+                        // Seleccionar el álbum correspondiente en el combo box
+                        int albumId = rs.getInt("album_id");
+                        for (int i = 0; i < cmbAlbum.getItemCount(); i++) {
+                            if (getIdFromComboItem(cmbAlbum.getItemAt(i)) == albumId) {
+                                cmbAlbum.setSelectedIndex(i);
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Error al cargar detalles de la canción: " + ex.getMessage());
+                }
+            }
+        });
+    }
+   
+   private void loadArtists() {
+        try (Connection conn = ConnectionDB.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT artist_id, artistName FROM Artist")) {
+
+            cmbArtist.removeAllItems();
+            while (rs.next()) {
+                cmbArtist.addItem(rs.getInt("artist_id") + " - " + rs.getString("artistName"));
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al cargar artistas: " + ex.getMessage());
+        }
+}
+   
+
+    private void loadAlbums() {
+        try (Connection conn = ConnectionDB.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT album_id, albumName FROM Album")) {
+
+            cmbAlbum.removeAllItems();
+            while (rs.next()) {
+                cmbAlbum.addItem(rs.getInt("album_id") + " - " + rs.getString("albumName"));
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al cargar álbumes: " + ex.getMessage());
+        }
+    }
+
+ private void loadSongs() {
+        try (Connection conn = ConnectionDB.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(
+                 "SELECT s.songName, s.duration, a.albumName, ar.artistName " +
+                 "FROM Song s " +
+                 "JOIN Album a ON s.album_id = a.album_id " +
+                 "JOIN Artist ar ON a.artist_id = ar.artist_id")) {
+
+            model.setRowCount(0);
+            while (rs.next()) {
+                model.addRow(new Object[] {
+                    rs.getString("songName"),
+                    rs.getString("duration"),
+                    rs.getString("albumName"),
+                    rs.getString("artistName")
+                });
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al cargar canciones: " + ex.getMessage());
+        }
+    }
+
+    private int getIdFromComboItem(String item) {
+        return Integer.parseInt(item.split(" - ")[0]);
+    }
+
+   
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jLabel1 = new javax.swing.JLabel();
+        txtSongName = new javax.swing.JTextField();
+        txtSongDuration = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        btnDeleteSong = new javax.swing.JButton();
+        btnAddSong = new javax.swing.JButton();
+        btnEditSong = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblSongsManagment = new javax.swing.JTable();
+        btnDone = new javax.swing.JButton();
+        btnBackToMenu = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        cmbArtist = new javax.swing.JComboBox<>();
+        cmbAlbum = new javax.swing.JComboBox<>();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        jLabel1.setText("Song name:");
+
+        txtSongName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSongNameActionPerformed(evt);
+            }
+        });
+
+        txtSongDuration.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSongDurationActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Song duration:");
+
+        jLabel3.setText(" Songs Managment");
+
+        btnDeleteSong.setText("Delete");
+        btnDeleteSong.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteSongActionPerformed(evt);
+            }
+        });
+
+        btnAddSong.setText("Add");
+        btnAddSong.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddSongActionPerformed(evt);
+            }
+        });
+
+        btnEditSong.setText("Edit");
+        btnEditSong.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditSongActionPerformed(evt);
+            }
+        });
+
+        tblSongsManagment.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Song Name", "Duration", "Album", "Artist"
+            }
+        ));
+        jScrollPane1.setViewportView(tblSongsManagment);
+
+        btnDone.setText("Done");
+        btnDone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDoneActionPerformed(evt);
+            }
+        });
+
+        btnBackToMenu.setText("Back to Menu");
+        btnBackToMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBackToMenuActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Artist:");
+
+        jLabel5.setText("Album:");
+
+        cmbArtist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbArtistActionPerformed(evt);
+            }
+        });
+
+        cmbAlbum.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbAlbumActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(14, 14, 14)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 378, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtSongDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtSongName, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(cmbAlbum, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cmbArtist, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                .addContainerGap(16, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnDeleteSong, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnAddSong, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnEditSong, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(98, 98, 98))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(btnBackToMenu)
+                        .addGap(36, 36, 36)
+                        .addComponent(btnDone)
+                        .addGap(26, 26, 26))))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(13, 13, 13)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(cmbArtist, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                        .addComponent(btnAddSong))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(cmbAlbum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(17, 17, 17)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnDeleteSong)
+                    .addComponent(jLabel1))
+                .addGap(19, 19, 19)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnEditSong)
+                    .addComponent(txtSongName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtSongDuration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnBackToMenu)
+                    .addComponent(btnDone)))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void txtSongDurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSongDurationActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSongDurationActionPerformed
+
+    private void txtSongNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSongNameActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSongNameActionPerformed
+
+    private void btnAddSongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddSongActionPerformed
+        String name = txtSongName.getText().trim();
+        String duration = txtSongDuration.getText().trim();
+        
+        if (name.isEmpty() || duration.isEmpty() || cmbAlbum.getSelectedIndex() < 0) {
+            JOptionPane.showMessageDialog(this, "Por favor, completa todos los campos.");
+            return;
+        }
+
+        try (Connection conn = ConnectionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                 "INSERT INTO Song (songName, duration, album_id) VALUES (?, ?, ?)")) {
+            
+            int albumId = getIdFromComboItem((String) cmbAlbum.getSelectedItem());
+            ps.setString(1, name);
+            ps.setString(2, duration);
+            ps.setInt(3, albumId);
+            ps.executeUpdate();
+
+            JOptionPane.showMessageDialog(this, "Canción agregada correctamente.");
+            loadSongs();
+            clearFields();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al agregar canción: " + ex.getMessage());
+        }                       
+
+
+    }//GEN-LAST:event_btnAddSongActionPerformed
+    
+   
+
+    private void btnDeleteSongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteSongActionPerformed
+        if (selectedSongId == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona una canción para eliminar.");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(
+            this, 
+            "¿Estás seguro de eliminar esta canción?", 
+            "Confirmar eliminación", 
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        try (Connection conn = ConnectionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                 "DELETE FROM Song WHERE song_id = ?")) {
+            
+            ps.setInt(1, selectedSongId);
+            ps.executeUpdate();
+
+            JOptionPane.showMessageDialog(this, "Canción eliminada correctamente.");
+            loadSongs();
+            clearFields();
+            selectedSongId = -1;
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al eliminar canción: " + ex.getMessage());
+        }
+    
+
+
+    }//GEN-LAST:event_btnDeleteSongActionPerformed
+
+    private void btnEditSongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditSongActionPerformed
+if (selectedSongId == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona una canción para editar.");
+            return;
+        }
+
+        String name = txtSongName.getText().trim();
+        String duration = txtSongDuration.getText().trim();
+        
+        if (name.isEmpty() || duration.isEmpty() || cmbAlbum.getSelectedIndex() < 0) {
+            JOptionPane.showMessageDialog(this, "Por favor, completa todos los campos.");
+            return;
+        }
+
+        try (Connection conn = ConnectionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                 "UPDATE Song SET songName = ?, duration = ?, album_id = ? WHERE song_id = ?")) {
+            
+            int albumId = getIdFromComboItem((String) cmbAlbum.getSelectedItem());
+            ps.setString(1, name);
+            ps.setString(2, duration);
+            ps.setInt(3, albumId);
+            ps.setInt(4, selectedSongId);
+            ps.executeUpdate();
+
+            JOptionPane.showMessageDialog(this, "Canción actualizada correctamente.");
+            loadSongs();
+            clearFields();
+            selectedSongId = -1;
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al actualizar canción: " + ex.getMessage());
+        }}
+    
+     private void clearFields() {
+        txtSongName.setText("");
+        txtSongDuration.setText("");
+        cmbAlbum.setSelectedIndex(0);
+    
+    }//GEN-LAST:event_btnEditSongActionPerformed
+
+     
+    private void btnBackToMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackToMenuActionPerformed
+        this.dispose();
+        new MenuForm().setVisible(true);
+    }//GEN-LAST:event_btnBackToMenuActionPerformed
+
+    private void btnDoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoneActionPerformed
+       this.dispose();
+    }//GEN-LAST:event_btnDoneActionPerformed
+
+    private void cmbArtistActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbArtistActionPerformed
+        
+    }//GEN-LAST:event_cmbArtistActionPerformed
+
+    private void cmbAlbumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbAlbumActionPerformed
+        if (cmbArtist.getSelectedIndex() >= 0) {
+            int artistId = getIdFromComboItem((String) cmbArtist.getSelectedItem());
+            try (Connection conn = ConnectionDB.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(
+                     "SELECT album_id, albumName FROM Album WHERE artist_id = ?")) {
+                
+                ps.setInt(1, artistId);
+                ResultSet rs = ps.executeQuery();
+                
+                cmbAlbum.removeAllItems();
+                while (rs.next()) {
+                    cmbAlbum.addItem(rs.getInt("album_id") + " - " + rs.getString("albumName"));
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al cargar álbumes del artista: " + ex.getMessage());
+            }
+        }                         
+    }//GEN-LAST:event_cmbAlbumActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(SongForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(SongForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(SongForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(SongForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the dialog */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                SongForm dialog = new SongForm(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddSong;
+    private javax.swing.JButton btnBackToMenu;
+    private javax.swing.JButton btnDeleteSong;
+    private javax.swing.JButton btnDone;
+    private javax.swing.JButton btnEditSong;
+    private javax.swing.JComboBox<String> cmbAlbum;
+    private javax.swing.JComboBox<String> cmbArtist;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tblSongsManagment;
+    private javax.swing.JTextField txtSongDuration;
+    private javax.swing.JTextField txtSongName;
+    // End of variables declaration//GEN-END:variables
+}

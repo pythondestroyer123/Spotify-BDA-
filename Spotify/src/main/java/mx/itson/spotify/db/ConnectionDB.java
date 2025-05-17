@@ -8,27 +8,22 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- *
- * @author Emiliano
- */
 public class ConnectionDB {
-    
+
     private static final String URL = "jdbc:mariadb://localhost:3306/spotify";
     private static final String USER = "root";
     private static final String PASSWORD = "admin";
-    
-    public Connection getConnection() {
+
+    public static Connection getConnection() {
         Connection connection = null;
-        try{
+        try {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            if(connection != null) {
+            if (connection != null) {
                 System.out.println("Conexión exitosa");
             }
-        }catch(SQLException ex) {
-            System.out.println("Error in connection: " + ex.toString());
+        } catch (SQLException ex) {
+            System.out.println("Error en la conexión: " + ex.toString());
         }
         return connection;
     }
-    
 }
