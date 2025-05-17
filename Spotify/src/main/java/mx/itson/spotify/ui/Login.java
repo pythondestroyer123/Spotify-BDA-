@@ -20,37 +20,21 @@ import mx.itson.spotify.services.UserService;
  */
 public class Login extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Login
-     */
     public Login() {
         initComponents();
     }
-    
-    public String hashPassword(String password, String salt) throws NoSuchAlgorithmException {
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    md.update(salt.getBytes(StandardCharsets.UTF_8));
-    byte[] hashedPassword = md.digest(password.getBytes(StandardCharsets.UTF_8));
-    StringBuilder sb = new StringBuilder();
-    for (byte b : hashedPassword) {
-        sb.append(String.format("%02x", b));
-    }
-    return sb.toString();
-    
-    }
-    
+
     private void loginAction() {
-    String username = tstUsername.getText();
+        String username = tstUsername.getText();
     String password = new String(pswUserPassword.getPassword());
 
     try (Connection conn = ConnectionDB.getConnection()) {
-        PreparedStatement stmt = conn.prepareStatement("SELECT password, salt, active FROM users WHERE username = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT password, active FROM users WHERE username = ?");
         stmt.setString(1, username);
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
-            String storedHash = rs.getString("password");
-            String salt = rs.getString("salt");
+            String storedPassword = rs.getString("password");
             boolean active = rs.getBoolean("active");
 
             if (!active) {
@@ -58,11 +42,12 @@ public class Login extends javax.swing.JFrame {
                 return;
             }
 
-            String inputHash = hashPassword(password, salt);
-
-            if (storedHash.equals(inputHash)) {
+            if (storedPassword.equals(password)) {
                 JOptionPane.showMessageDialog(this, "Inicio de sesión exitoso");
-                // Aquí abrirías la siguiente ventana de la app
+
+                this.dispose();
+                MenuForm menu = new MenuForm();
+                menu.setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(this, "Contraseña incorrecta");
             }
@@ -74,6 +59,7 @@ public class Login extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
     }
 }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -195,25 +181,15 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_pswUserPasswordActionPerformed
 
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
+
         RegisterUser registerDialog = new RegisterUser(this, true);
         registerDialog.setVisible(true);
+        
     }//GEN-LAST:event_btnRegisterActionPerformed
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         loginAction();
-        
-        UserService userService = new UserService();
-
-    String username = tstUsername.getText().trim();
-    String password = new String(pswUserPassword.getPassword());
-
-    if (userService.validateLogin(username, password)) {
-        // Login exitoso
-        // Abre la ventana principal o lo que sea
-    } else {
-        JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.", "Error", JOptionPane.ERROR_MESSAGE);
-    }
-    
+          
     }//GEN-LAST:event_btnLoginActionPerformed
 
     /**

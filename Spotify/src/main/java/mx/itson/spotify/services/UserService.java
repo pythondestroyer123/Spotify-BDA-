@@ -6,15 +6,14 @@ package mx.itson.spotify.services;
 
 import mx.itson.spotify.db.ConnectionDB;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+// import java.security.MessageDigest;
+// import java.security.NoSuchAlgorithmException;
+// import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Base64;
-
+// import java.util.Base64;
 
 public class UserService {
 
@@ -38,11 +37,16 @@ public class UserService {
         return exists;
     }
 
-    // Guarda un usuario nuevo en la base de datos con salt y contraseña hasheada
+    // Guarda un usuario nuevo en la base de datos (sin salt ni contraseña hasheada)
     public boolean saveUser(String nombres, String apellidos, String username, String password, String correo, String celular) {
         boolean saved = false;
         String sql = "INSERT INTO users (nombres, apellidos, username, password, salt, correo, celular) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
+        // Guardar directamente la contraseña sin hash
+        String salt = ""; // Se puede eliminar de la tabla si ya no se usará
+        String hashedPassword = password;
+
+        /*
         // Generar un salt aleatorio
         String salt = generateSalt();
         if (salt == null) {
@@ -54,6 +58,7 @@ public class UserService {
         if (hashedPassword == null) {
             return false; // Error al hashear la contraseña
         }
+        */
 
         try (Connection conn = ConnectionDB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -74,40 +79,34 @@ public class UserService {
         return saved;
     }
 
-    // Valida las credenciales del usuario en el login
+    // Valida las credenciales del usuario (sin hash, usando texto plano)
     public boolean validateLogin(String username, String password) {
-        String sql = "SELECT password, salt FROM users WHERE username = ? AND active = 1";
+        String sql = "SELECT password FROM users WHERE username = ? AND active = 1";
         try (Connection conn = ConnectionDB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String storedHash = rs.getString("password");
+                    String storedPassword = rs.getString("password");
+
+                    // Comparar directamente sin hashing
+                    return storedPassword.equals(password);
+
+                    /*
                     String salt = rs.getString("salt");
-
-                    // Hashear la contraseña ingresada con el salt guardado
                     String hashedInput = hashPasswordWithSalt(password, salt);
-
-                    // Comparar hashes
                     return storedHash.equals(hashedInput);
+                    */
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
         return false;
-        
-        
-        
-        
-        
-        
-        
-        
-        
     }
 
+    /*
     // Genera un salt aleatorio codificado en Base64
     private String generateSalt() {
         try {
@@ -139,5 +138,5 @@ public class UserService {
         }
         return null;
     }
-
+    */
 }

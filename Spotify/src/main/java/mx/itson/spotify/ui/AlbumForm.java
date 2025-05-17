@@ -455,6 +455,7 @@ public class AlbumForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnBackToMenuActionPerformed
 
     private void btnSongsManagmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSongsManagmentActionPerformed
+        this.dispose();
         SongForm songForm = new SongForm((java.awt.Frame) SwingUtilities.getWindowAncestor(this), true);
         songForm.setVisible(true);
     

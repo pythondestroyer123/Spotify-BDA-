@@ -58,43 +58,51 @@ public class MenuForm extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("Menu");
+        jLabel1.setFont(new java.awt.Font("Sitka Text", 1, 24)); // NOI18N
+        jLabel1.setText("Spotify Menu");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(76, 76, 76)
-                .addComponent(btnMyPlaylists)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 85, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnLogout)
-                    .addComponent(btnArtist))
-                .addGap(76, 76, 76))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(164, 164, 164))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(55, 55, 55)
+                                .addComponent(btnLogout))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(46, 46, 46)
+                                .addComponent(btnMyPlaylists))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(56, 56, 56)
+                                .addComponent(btnArtist)))
+                        .addGap(0, 43, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
+                .addGap(19, 19, 19)
                 .addComponent(jLabel1)
-                .addGap(58, 58, 58)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnMyPlaylists)
-                    .addComponent(btnArtist))
-                .addGap(59, 59, 59)
+                .addGap(53, 53, 53)
+                .addComponent(btnArtist)
+                .addGap(26, 26, 26)
+                .addComponent(btnMyPlaylists)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addComponent(btnLogout)
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addGap(29, 29, 29))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnMyPlaylistsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMyPlaylistsActionPerformed
+        this.dispose();
         javax.swing.JFrame parentFrame = new javax.swing.JFrame();
         PlaylistForm playlistForm = new PlaylistForm(parentFrame, true, 1); // Usa el ID de usuario correcto
         playlistForm.setLocationRelativeTo(this);
@@ -103,6 +111,7 @@ public class MenuForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnMyPlaylistsActionPerformed
 
     private void btnArtistActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnArtistActionPerformed
+        this.dispose();
         javax.swing.JFrame parentFrame = new javax.swing.JFrame();
         ArtistForm artistForm = new ArtistForm(parentFrame, true);
         artistForm.setLocationRelativeTo(this);

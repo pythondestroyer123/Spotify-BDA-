@@ -7,10 +7,13 @@ package mx.itson.spotify.ui;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import mx.itson.spotify.db.ConnectionDB;
+import mx.itson.spotify.ui.AlbumForm;
+import mx.itson.spotify.ui.MenuForm;
 
 /**
  *
@@ -57,6 +60,22 @@ public class ArtistForm extends javax.swing.JDialog {
     } catch (Exception ex) {
         JOptionPane.showMessageDialog(this, "Error al cargar artistas: " + ex.getMessage());
     }
+}
+    private int obtenerIdArtistaPorNombre(String nombre) throws SQLException {
+    try (Connection conn = ConnectionDB.getConnection();
+         PreparedStatement ps = conn.prepareStatement(
+             "SELECT artist_id FROM Artist WHERE artistName = ?")) {
+        ps.setString(1, nombre);
+        ResultSet rs = ps.executeQuery();
+        return rs.next() ? rs.getInt(1) : -1;
+    }
+}
+
+// Limpiar campos después de eliminar
+private void clearArtistFields() {
+    txtArtistName.setText("");
+    txtGenre.setText("");
+    txtFollowers.setText("");
 }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -282,29 +301,93 @@ public class ArtistForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnAddArtistActionPerformed
 
     private void btnDeleteArtistActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteArtistActionPerformed
-        int row = tblArtistManagment.getSelectedRow();
+  
+    // Verificar selección
+    int row = tblArtistManagment.getSelectedRow();
     if (row == -1) {
-        JOptionPane.showMessageDialog(this, "Selecciona un artista para eliminar.");
+        JOptionPane.showMessageDialog(
+            this, 
+            "Selecciona un artista para eliminar.", 
+            "Advertencia", 
+            JOptionPane.WARNING_MESSAGE
+        );
         return;
     }
 
-    try {
-        String name = tblArtistManagment.getValueAt(row, 0).toString();
+    // Confirmación EXTRA (porque esto borrará todo)
+    int confirm = JOptionPane.showConfirmDialog(
+        this, 
+        "CUIDADO \n\nSe eliminará el artista, sus álbumes y todas sus canciones. \n¿Estás completamente seguro?", 
+        "Confirmar eliminación", 
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE
+    );
+    
+    if (confirm != JOptionPane.YES_OPTION) return;
 
-        Connection connection = ConnectionDB.getConnection();
-        PreparedStatement statement = connection.prepareStatement("DELETE FROM artist WHERE artistName = ?");
-        statement.setString(1, name);
-        statement.executeUpdate();
+    try (Connection conn = ConnectionDB.getConnection()) {
+        conn.setAutoCommit(false); // Iniciar transacción
 
-        statement.close();
-        connection.close();
+        String artistName = tblArtistManagment.getValueAt(row, 0).toString();
+        int artistId = obtenerIdArtistaPorNombre(artistName); // Método que debes implementar
 
-        loadArtists();
+        // 1. Primero eliminar todas las canciones de sus álbumes
+        try (PreparedStatement deleteSongsPs = conn.prepareStatement(
+                "DELETE FROM Song WHERE album_id IN (SELECT album_id FROM Album WHERE artist_id = ?)")) {
+            deleteSongsPs.setInt(1, artistId);
+            deleteSongsPs.executeUpdate();
+        }
+
+        // 2. Luego eliminar sus álbumes
+        try (PreparedStatement deleteAlbumsPs = conn.prepareStatement(
+                "DELETE FROM Album WHERE artist_id = ?")) {
+            deleteAlbumsPs.setInt(1, artistId);
+            deleteAlbumsPs.executeUpdate();
+        }
+
+        // 3. Finalmente, eliminar el artista
+        try (PreparedStatement deleteArtistPs = conn.prepareStatement(
+                "DELETE FROM Artist WHERE artist_id = ?")) {
+            deleteArtistPs.setInt(1, artistId);
+            int affectedRows = deleteArtistPs.executeUpdate();
+            
+            if (affectedRows > 0) {
+                conn.commit(); // Confirmar cambios si todo salió bien
+                JOptionPane.showMessageDialog(
+                    this, 
+                    "Artista y todo su contenido eliminados con éxito.", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+                
+                // Actualizar la tabla y limpiar campos
+                loadArtists();
+                clearArtistFields();
+            } else {
+                conn.rollback();
+                JOptionPane.showMessageDialog(
+                    this, 
+                    "No se encontró el artista.", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(
+            this, 
+            "Error al eliminar: " + ex.getMessage(), 
+            "Error de base de datos", 
+            JOptionPane.ERROR_MESSAGE
+        );
     } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Error al eliminar artista: " + ex.getMessage());
+        JOptionPane.showMessageDialog(
+            this, 
+            "Error inesperado: " + ex.getMessage(), 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE
+        );
     }
-
-
     }//GEN-LAST:event_btnDeleteArtistActionPerformed
 
     private void btnEditArtistActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditArtistActionPerformed
@@ -343,9 +426,10 @@ public class ArtistForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnDoneActionPerformed
 
     private void btnAlbumManagmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlbumManagmentActionPerformed
-        MenuForm menu = new MenuForm();
-        menu.setLocationRelativeTo(null); // Opcional: centra el menú en pantalla
-        menu.setVisible(true); // Muestra el menú
+        this.dispose();
+        AlbumForm albumForm = new AlbumForm(new javax.swing.JFrame(), true);
+        albumForm.setLocationRelativeTo(null);
+        albumForm.setVisible(true);
     }//GEN-LAST:event_btnAlbumManagmentActionPerformed
 
     private void btnBackToMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackToMenuActionPerformed
