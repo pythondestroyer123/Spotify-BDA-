@@ -65,7 +65,7 @@ public class SongForm extends javax.swing.JDialog {
         });
     }
    
-   private void loadArtists() {
+    private void loadArtists() {
         try (Connection conn = ConnectionDB.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT artist_id, artistName FROM Artist")) {
@@ -94,7 +94,7 @@ public class SongForm extends javax.swing.JDialog {
         }
     }
 
- private void loadSongs() {
+    private void loadSongs() {
         try (Connection conn = ConnectionDB.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(
